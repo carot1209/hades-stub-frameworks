@@ -100,6 +100,16 @@ jobs:
         file output/iPASTORENetflixHades.dylib
         otool -l output/iPASTORENetflixHades.dylib | grep -A2 LC_ID_DYLIB
 
+    - name: Compile NetflixSplash.storyboard
+      run: |
+        mkdir -p output
+        ibtool --errors --warnings --notices \
+          --output-format human-readable-text \
+          --compile output/NetflixSplash.storyboardc \
+          NetflixSplash.storyboard
+        echo "--- storyboardc content ---"
+        ls -laR output/NetflixSplash.storyboardc
+
     - name: Upload frameworks artifact
       uses: actions/upload-artifact@v4
       with:

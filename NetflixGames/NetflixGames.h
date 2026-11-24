@@ -73,6 +73,3 @@ __attribute__((objc_runtime_name("_TtC12NetflixGames15NetflixGamesSDK")))
 @interface GameComplete : HadesNoopEvent @end
 @interface ProgressCheckpointComplete : HadesNoopEvent @end
 
-// ── Splash ───────────────────────────────────────────────────────────────────
-@interface NetflixSplashViewController : UIViewController
-@end

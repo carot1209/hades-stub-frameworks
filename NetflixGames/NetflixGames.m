@@ -132,7 +132,3 @@ static NSError *HadesRefuseError(void) {
 @implementation ProgressCheckpointComplete          @end
 
 
-// ── NetflixSplashViewController ───────────────────────────────────────────────
-@implementation NetflixSplashViewController
-- (void)viewDidLoad { [super viewDidLoad]; }
-@end
