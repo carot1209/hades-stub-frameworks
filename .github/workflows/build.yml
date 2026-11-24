@@ -1,0 +1,108 @@
+name: Build Stub Frameworks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15          # Apple Silicon runner
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Show available Xcode
+      run: ls /Applications | grep Xcode
+
+    - name: Prepare build dir
+      run: mkdir -p build output
+
+    - name: Build NetflixGames.framework
+      run: |
+        SDK=$(xcrun --sdk iphoneos --show-sdk-path)
+        clang \
+          -arch arm64 \
+          -isysroot "$SDK" \
+          -mios-version-min=16.0 \
+          -fobjc-arc \
+          -dynamiclib \
+          -framework Foundation \
+          -framework UIKit \
+          -install_name @rpath/NetflixGames.framework/NetflixGames \
+          -o build/NetflixGames \
+          NetflixGames/NetflixGames.m
+        mkdir -p output/NetflixGames.framework
+        cp build/NetflixGames output/NetflixGames.framework/NetflixGames
+        cp NetflixGames/Info.plist output/NetflixGames.framework/Info.plist
+
+    - name: Build NetflixGames-companion.framework
+      run: |
+        SDK=$(xcrun --sdk iphoneos --show-sdk-path)
+        clang \
+          -arch arm64 \
+          -isysroot "$SDK" \
+          -mios-version-min=16.0 \
+          -fobjc-arc \
+          -dynamiclib \
+          -framework Foundation \
+          -install_name @rpath/NetflixGames-companion.framework/NetflixGames-companion \
+          -o build/NetflixGames-companion \
+          "NetflixGames-companion/NetflixGames_companion.m"
+        mkdir -p "output/NetflixGames-companion.framework"
+        cp build/NetflixGames-companion "output/NetflixGames-companion.framework/NetflixGames-companion"
+        cp "NetflixGames-companion/Info.plist" "output/NetflixGames-companion.framework/Info.plist"
+
+    - name: Build DeltaDNA.framework
+      run: |
+        SDK=$(xcrun --sdk iphoneos --show-sdk-path)
+        clang \
+          -arch arm64 \
+          -isysroot "$SDK" \
+          -mios-version-min=16.0 \
+          -fobjc-arc \
+          -dynamiclib \
+          -framework Foundation \
+          -install_name @rpath/DeltaDNA.framework/DeltaDNA \
+          -o build/DeltaDNA \
+          DeltaDNA/DeltaDNA.m
+        mkdir -p output/DeltaDNA.framework
+        cp build/DeltaDNA output/DeltaDNA.framework/DeltaDNA
+        cp DeltaDNA/Info.plist output/DeltaDNA.framework/Info.plist
+
+    - name: Build iPASTORENetflixHades.dylib
+      run: |
+        SDK=$(xcrun --sdk iphoneos --show-sdk-path)
+        clang \
+          -arch arm64 \
+          -isysroot "$SDK" \
+          -mios-version-min=16.0 \
+          -fobjc-arc \
+          -dynamiclib \
+          -framework Foundation \
+          -install_name @executable_path/Frameworks/iPASTORENetflixHades.dylib \
+          -o build/iPASTORENetflixHades.dylib \
+          iPASTORENetflixHades/iPASTORENetflixHades.m
+        cp build/iPASTORENetflixHades.dylib output/iPASTORENetflixHades.dylib
+
+    - name: Verify binaries
+      run: |
+        echo "=== NetflixGames ==="
+        file output/NetflixGames.framework/NetflixGames
+        otool -l output/NetflixGames.framework/NetflixGames | grep -A2 LC_ID_DYLIB
+        echo "=== NetflixGames-companion ==="
+        file "output/NetflixGames-companion.framework/NetflixGames-companion"
+        echo "=== DeltaDNA ==="
+        file output/DeltaDNA.framework/DeltaDNA
+        echo "=== iPASTORENetflixHades.dylib ==="
+        file output/iPASTORENetflixHades.dylib
+        otool -l output/iPASTORENetflixHades.dylib | grep -A2 LC_ID_DYLIB
+
+    - name: Upload frameworks artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: hades-stub-frameworks
+        path: output/
+        retention-days: 30
