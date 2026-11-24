@@ -1,7 +1,8 @@
 // DeltaDNA.framework — stub
-// Game import 2 class: _OBJC_CLASS_$_DDNASDK, _OBJC_CLASS_$_DDNAEvent.
-// Analytics không được khởi động ("services: analytics not started"),
-// nhưng 2 class phải tồn tại để dyld bind được classref → tránh crash lúc mở.
+// Game import classref: _OBJC_CLASS_$_DDNASDK, _OBJC_CLASS_$_DDNAEvent.
+// libhades.so: [DDNASDK sharedInstance] -> nil, [DDNAEvent eventWithName:] -> nil
+// => mọi lời gọi analytics thành gửi message tới nil = no-op (analytics not started).
+// 2 class vẫn phải tồn tại để dyld bind classref, tránh crash lúc mở app.
 
 #import <Foundation/Foundation.h>
 
@@ -10,23 +11,13 @@
 @end
 
 @implementation DDNASDK
-+ (instancetype)sharedInstance {
-    static DDNASDK *s = nil;
-    static dispatch_once_t once;
-    dispatch_once(&once, ^{ s = [[self alloc] init]; });
-    return s;
-}
++ (instancetype)sharedInstance { return nil; }   // .so: mov x0, xzr
 @end
 
 @interface DDNAEvent : NSObject
-- (instancetype)initWithName:(NSString *)name;
++ (instancetype)eventWithName:(NSString *)name;
 @end
 
 @implementation DDNAEvent
-- (instancetype)initWithName:(NSString *)name { return [super init]; }
++ (instancetype)eventWithName:(NSString *)name { return nil; }   // .so: mov x0, xzr
 @end
-
-__attribute__((constructor))
-static void DeltaDNAInit(void) {
-    NSLog(@"[DeltaDNA] loaded (stub — analytics not started)");
-}
