@@ -5,7 +5,7 @@
 static NSError *HadesRefuseError(void) {
     return [NSError errorWithDomain:@"HadesPort"
                                code:1
-                           userInfo:@{ NSLocalizedDescription: @"Netflix services are not part of this port" }];
+                           userInfo:@{ NSLocalizedDescriptionKey: @"Netflix services are not part of this port" }];
 }
 
 // ── HadesNetflixProfile ───────────────────────────────────────────────────────
