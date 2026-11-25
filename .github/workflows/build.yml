@@ -87,6 +87,22 @@ jobs:
           iPASTORENetflixHades/iPASTORENetflixHades.m
         cp build/iPASTORENetflixHades.dylib output/iPASTORENetflixHades.dylib
 
+    - name: Build iPASTORENetflixHades.dylib (LiveContainer)
+      run: |
+        SDK=$(xcrun --sdk iphoneos --show-sdk-path)
+        mkdir -p build/lc output/LiveContainer
+        clang \
+          -arch arm64 \
+          -isysroot "$SDK" \
+          -mios-version-min=16.0 \
+          -fobjc-arc \
+          -dynamiclib \
+          -framework Foundation \
+          -install_name @executable_path/Frameworks/iPASTORENetflixHades.dylib \
+          -o build/lc/iPASTORENetflixHades.dylib \
+          iPASTORENetflixHades/iPASTORENetflixHades_LC.m
+        cp build/lc/iPASTORENetflixHades.dylib output/LiveContainer/iPASTORENetflixHades.dylib
+
     - name: Verify binaries
       run: |
         echo "=== NetflixGames ==="
