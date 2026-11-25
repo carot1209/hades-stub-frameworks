@@ -1,5 +1,6 @@
 #import "NetflixGames.h"
 #import <objc/runtime.h>
+#import <objc/message.h>
 
 #define HLOG(fmt, ...) NSLog(@"[HadesStub] " fmt, ##__VA_ARGS__)
 
@@ -71,7 +72,36 @@ static NSError *HadesRefuseError(void) {
 - (void)onPlayerAccessChangeWithAccessEvent:(id)event { HLOG(@"%@", @"- (void)onPlayerAccessChangeWithAccessEvent:(id)event");}
 - (void)showNetflixAccessButton { HLOG(@"%@", @"- (void)showNetflixAccessButton");}
 - (void)hideNetflixAccessButton { HLOG(@"%@", @"- (void)hideNetflixAccessButton");}
-- (void)registerEventHandler:(id)handler { HLOG(@"%@", @"- (void)registerEventHandler:(id)handler");}
+static id gHadesEventHandler = nil;
+static void HadesDumpObject(id o) {
+    Class c = object_getClass(o);
+    HLOG(@"handler class=%@ super=%@", NSStringFromClass(c), NSStringFromClass(class_getSuperclass(c)));
+    unsigned int n = 0;
+    Method *m = class_copyMethodList(c, &n);
+    for (unsigned int i = 0; i < n; i++)
+        HLOG(@"  method %@ %s", NSStringFromSelector(method_getName(m[i])), method_getTypeEncoding(m[i]));
+    free(m);
+    Protocol * __unsafe_unretained *pl = class_copyProtocolList(c, &n);
+    for (unsigned int i = 0; i < n; i++) HLOG(@"  protocol %s", protocol_getName(pl[i]));
+    free(pl);
+}
+- (void)registerEventHandler:(id)handler {
+    HLOG(@"registerEventHandler: %@", handler);
+    gHadesEventHandler = handler;
+    if (!handler) return;
+    HadesDumpObject(handler);
+    // libhades.so có selector onPlayerAccessChangeWithAccessEvent: -> báo cho handler là đã có quyền.
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        SEL sel = @selector(onPlayerAccessChangeWithAccessEvent:);
+        if ([handler respondsToSelector:sel]) {
+            HLOG(@"-> calling handler onPlayerAccessChangeWithAccessEvent:");
+            ((void(*)(id, SEL, id))objc_msgSend)(handler, sel, [[HadesNetflixAccessEvent alloc] init]);
+            HLOG(@"<- returned from onPlayerAccessChangeWithAccessEvent:");
+        } else {
+            HLOG(@"handler does NOT respond to onPlayerAccessChangeWithAccessEvent:");
+        }
+    });
+}
 - (void)setUserStateChangeHandler:(id)handler { HLOG(@"%@", @"- (void)setUserStateChangeHandler:(id)handler");}
 
 // Telemetry — no-op
