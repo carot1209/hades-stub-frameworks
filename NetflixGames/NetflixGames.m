@@ -123,19 +123,19 @@ static void HadesDumpObject(id o) {
 
 // Cloud save / achievements — refuse: handler(NO/nil, HadesRefuseError)
 - (void)playerBlobsWithCompletionHandler:(void(^)(NSArray *blobs, NSError *error))handler { HLOG(@"%@", @"- (void)playerBlobsWithCompletionHandler:(void(^)(NSArray *blobs, NSError *error))handler");
-    if (handler) dispatch_async(dispatch_get_main_queue(), ^{ handler(nil, HadesRefuseError()); });
+    if (handler) dispatch_async(dispatch_get_main_queue(), ^{ handler(@[], nil); });
 }
 - (void)readPlayerBlobWithName:(NSString *)name completionHandler:(void(^)(NetflixBlobContainer *blob, NSError *error))handler { HLOG(@"%@", @"- (void)readPlayerBlobWithName:(NSString *)name completionHandler:(void(^)(NetflixBlobContainer *blob, NSError *error))handler");
     if (handler) dispatch_async(dispatch_get_main_queue(), ^{ handler(nil, HadesRefuseError()); });
 }
 - (void)writePlayerBlobWithName:(NSString *)name blobContainer:(NetflixBlobContainer *)container completionHandler:(void(^)(BOOL success, NSError *error))handler { HLOG(@"%@", @"- (void)writePlayerBlobWithName:(NSString *)name blobContainer:(NetflixBlobContainer *)container completionHandler:(void(^)(BOOL success, NSError *error))handler");
-    if (handler) dispatch_async(dispatch_get_main_queue(), ^{ handler(NO, HadesRefuseError()); });
+    if (handler) dispatch_async(dispatch_get_main_queue(), ^{ handler(YES, nil); });
 }
 - (void)deletePlayerBlobWithName:(NSString *)name completionHandler:(void(^)(BOOL success, NSError *error))handler { HLOG(@"%@", @"- (void)deletePlayerBlobWithName:(NSString *)name completionHandler:(void(^)(BOOL success, NSError *error))handler");
-    if (handler) dispatch_async(dispatch_get_main_queue(), ^{ handler(NO, HadesRefuseError()); });
+    if (handler) dispatch_async(dispatch_get_main_queue(), ^{ handler(YES, nil); });
 }
 - (void)resolveConflictWithName:(NSString *)name resolution:(NSInteger)resolution completionHandler:(void(^)(BOOL success, NSError *error))handler { HLOG(@"%@", @"- (void)resolveConflictWithName:(NSString *)name resolution:(NSInteger)resolution completionHandler:(void(^)(BOOL success, NSError *error))handler");
-    if (handler) dispatch_async(dispatch_get_main_queue(), ^{ handler(NO, HadesRefuseError()); });
+    if (handler) dispatch_async(dispatch_get_main_queue(), ^{ handler(YES, nil); });
 }
 - (void)unlockAchievementWithAchievementName:(NSString *)name completionHandler:(void(^)(BOOL success, NSError *error))handler { HLOG(@"%@", @"- (void)unlockAchievementWithAchievementName:(NSString *)name completionHandler:(void(^)(BOOL success, NSError *error))handler");
     if (handler) dispatch_async(dispatch_get_main_queue(), ^{ handler(NO, HadesRefuseError()); });
