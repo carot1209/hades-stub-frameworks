@@ -4,6 +4,12 @@
 
 #define HLOG(fmt, ...) NSLog(@"[HadesStub] " fmt, ##__VA_ARGS__)
 
+static NSMethodSignature *HadesSig(SEL sel);
+static void HadesFireBlocks(NSInvocation *inv);
+#define HADES_SAFE_FORWARD(NAME) \
+- (NSMethodSignature *)methodSignatureForSelector:(SEL)sel { return [super methodSignatureForSelector:sel] ?: HadesSig(sel); } \
+- (void)forwardInvocation:(NSInvocation *)inv { HLOG(@"UNKNOWN -[" NAME " %@]", NSStringFromSelector(inv.selector)); HadesFireBlocks(inv); }
+
 __attribute__((constructor)) static void HadesNGLoaded(void) {
     HLOG(@"NetflixGames loaded (stub, logging build)");
 }
@@ -20,11 +26,18 @@ static NSError *HadesRefuseError(void) {
 @implementation HadesNetflixProfile
 - (NSString *)playerID          { return @"HadesPortPlayer"; }
 - (NSString *)preferredLanguage { return @"en"; }
+- (NSString *)countryCode       { return @"US"; }
+HADES_SAFE_FORWARD("HadesNetflixProfile")
 @end
 
 // ── HadesNetflixAccessEvent ───────────────────────────────────────────────────
 @implementation HadesNetflixAccessEvent
-- (id)current  { return self; }
+// Game gọi [[event current] playerID] -> current phải là profile.
+- (id)current  { HLOG(@"accessEvent current"); return [[HadesNetflixProfile alloc] init]; }
+- (NSString *)playerID          { return @"HadesPortPlayer"; }
+- (NSString *)preferredLanguage { return @"en"; }
+- (NSString *)countryCode       { return @"US"; }
+HADES_SAFE_FORWARD("HadesNetflixAccessEvent")
 - (id)previous { return nil; }   // .so: mov x0, xzr
 @end
 
