@@ -10,8 +10,10 @@
 + (instancetype)sharedInstance;
 @end
 
+__attribute__((constructor)) static void HadesDDNALoaded(void) { NSLog(@"[HadesStub] DeltaDNA loaded (stub)"); }
+
 @implementation DDNASDK
-+ (instancetype)sharedInstance { return nil; }   // .so: mov x0, xzr
++ (instancetype)sharedInstance { NSLog(@"[HadesStub] DDNASDK sharedInstance"); return nil; }   // .so: mov x0, xzr
 @end
 
 @interface DDNAEvent : NSObject
@@ -19,5 +21,5 @@
 @end
 
 @implementation DDNAEvent
-+ (instancetype)eventWithName:(NSString *)name { return nil; }   // .so: mov x0, xzr
++ (instancetype)eventWithName:(NSString *)name { NSLog(@"[HadesStub] DDNAEvent %@", name); return nil; }   // .so: mov x0, xzr
 @end
