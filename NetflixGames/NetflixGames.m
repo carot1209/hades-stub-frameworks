@@ -44,12 +44,19 @@ HADES_SAFE_FORWARD("HadesNetflixAccessEvent")
 // ── NetflixBlobContainer ──────────────────────────────────────────────────────
 @implementation NetflixBlobContainer {
     NSData *_data;
+    id _timestamp;
 }
-- (instancetype)initWithData:(NSData *)data {
-    if ((self = [super init])) { _data = data; }
+// Game gọi [[NetflixBlobContainer alloc] initWithBlob:data timestamp:nil] khi Cloud::Save
+- (instancetype)initWithBlob:(NSData *)blob timestamp:(id)timestamp {
+    HLOG(@"NetflixBlobContainer initWithBlob:%lu bytes", (unsigned long)blob.length);
+    if ((self = [super init])) { _data = blob; _timestamp = timestamp; }
     return self;
 }
-- (NSData *)data { return _data; }
+- (instancetype)initWithData:(NSData *)data { return [self initWithBlob:data timestamp:nil]; }
+- (NSData *)blob      { return _data; }
+- (NSData *)data      { return _data; }
+- (id)timestamp       { return _timestamp; }
+HADES_SAFE_FORWARD("NetflixBlobContainer")
 @end
 
 // ── NetflixGamesSDK ───────────────────────────────────────────────────────────
