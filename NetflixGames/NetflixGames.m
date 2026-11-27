@@ -68,6 +68,13 @@ HADES_SAFE_FORWARD("NetflixBlobContainer")
 HADES_SAFE_FORWARD("HadesWriteResult")
 @end
 
+// Blob store: game thường gọi rồi ĐỨNG CHỜ (usleep/cond wait) trên chính thread gọi,
+// có khi là main thread -> nếu stub dispatch completion về main queue sẽ deadlock.
+// SDK thật trả completion trên queue nền của nó, nên ở đây dùng global queue.
+static dispatch_queue_t HadesBlobQueue(void) {
+    return dispatch_get_global_queue(QOS_CLASS_UTILITY, 0);
+}
+
 // ── NetflixGamesSDK ───────────────────────────────────────────────────────────
 @implementation NetflixGamesSDK
 
@@ -139,19 +146,19 @@ static void HadesDumpObject(id o) {
 
 // Cloud save / achievements — refuse: handler(NO/nil, HadesRefuseError)
 - (void)playerBlobsWithCompletionHandler:(void(^)(NSArray *blobs, NSError *error))handler { HLOG(@"%@", @"- (void)playerBlobsWithCompletionHandler:(void(^)(NSArray *blobs, NSError *error))handler");
-    if (handler) dispatch_async(dispatch_get_main_queue(), ^{ handler(@[], nil); });
+    if (handler) dispatch_async(HadesBlobQueue(), ^{ handler(@[], nil); });
 }
 - (void)readPlayerBlobWithName:(NSString *)name completionHandler:(void(^)(NetflixBlobContainer *blob, NSError *error))handler { HLOG(@"%@", @"- (void)readPlayerBlobWithName:(NSString *)name completionHandler:(void(^)(NetflixBlobContainer *blob, NSError *error))handler");
-    if (handler) dispatch_async(dispatch_get_main_queue(), ^{ handler(nil, HadesRefuseError()); });
+    if (handler) dispatch_async(HadesBlobQueue(), ^{ handler(nil, HadesRefuseError()); });
 }
 - (void)writePlayerBlobWithName:(NSString *)name blobContainer:(NetflixBlobContainer *)container completionHandler:(void(^)(BOOL success, NSError *error))handler { HLOG(@"%@", @"- (void)writePlayerBlobWithName:(NSString *)name blobContainer:(NetflixBlobContainer *)container completionHandler:(void(^)(BOOL success, NSError *error))handler");
-    if (handler) dispatch_async(dispatch_get_main_queue(), ^{ ((void(^)(id, id))handler)([HadesWriteResult new], nil); });
+    if (handler) dispatch_async(HadesBlobQueue(), ^{ ((void(^)(id, id))handler)([HadesWriteResult new], nil); });
 }
 - (void)deletePlayerBlobWithName:(NSString *)name completionHandler:(void(^)(BOOL success, NSError *error))handler { HLOG(@"%@", @"- (void)deletePlayerBlobWithName:(NSString *)name completionHandler:(void(^)(BOOL success, NSError *error))handler");
-    if (handler) dispatch_async(dispatch_get_main_queue(), ^{ ((void(^)(id, id))handler)([HadesWriteResult new], nil); });
+    if (handler) dispatch_async(HadesBlobQueue(), ^{ ((void(^)(id, id))handler)([HadesWriteResult new], nil); });
 }
 - (void)resolveConflictWithName:(NSString *)name resolution:(NSInteger)resolution completionHandler:(void(^)(BOOL success, NSError *error))handler { HLOG(@"%@", @"- (void)resolveConflictWithName:(NSString *)name resolution:(NSInteger)resolution completionHandler:(void(^)(BOOL success, NSError *error))handler");
-    if (handler) dispatch_async(dispatch_get_main_queue(), ^{ ((void(^)(id, id))handler)([HadesWriteResult new], nil); });
+    if (handler) dispatch_async(HadesBlobQueue(), ^{ ((void(^)(id, id))handler)([HadesWriteResult new], nil); });
 }
 - (void)unlockAchievementWithAchievementName:(NSString *)name completionHandler:(void(^)(BOOL success, NSError *error))handler { HLOG(@"%@", @"- (void)unlockAchievementWithAchievementName:(NSString *)name completionHandler:(void(^)(BOOL success, NSError *error))handler");
     if (handler) dispatch_async(dispatch_get_main_queue(), ^{ handler(NO, HadesRefuseError()); });
